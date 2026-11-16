@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ space.title or space.name }} - Leave a Testimonial</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      {% if space.theme == 'classic' %}
+        body { font-family: Georgia, Cambria, 'Times New Roman', Times, serif; }
+      {% endif %}
+    </style>
+</head>
+
+{% if space.theme == 'minimal' %}
+<!-- Minimal Theme: Monochromatic, spacious, crisp borders -->
+<body class="min-h-full bg-white text-zinc-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6">
+    <div class="max-w-xl w-full mx-auto space-y-8">
+        <div class="text-center space-y-2 border-b border-zinc-200 pb-8">
+            <h1 class="text-3xl font-light tracking-tight text-zinc-900">{{ space.title or space.name }}</h1>
+            {% if space.subtitle %}
+                <p class="text-sm text-zinc-500 font-light">{{ space.subtitle }}</p>
+            {% endif %}
+        </div>
+
+        {% if error %}
+            <div class="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="bg-zinc-50 border border-zinc-200 p-8 rounded-none">
+            {% if space.ask %}
+                <div class="mb-6 p-4 bg-white border border-zinc-200 text-sm text-zinc-700">
+                    <p class="font-medium text-xs uppercase tracking-widest text-zinc-400 mb-1">Our Question</p>
+                    <p>{{ space.ask }}</p>
+                </div>
+            {% endif %}
+
+            <form action="/s/{{ space.public_slug }}/submit-form" method="post" class="space-y-5">
+                {% if space.enable_rating %}
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-2">Rating</label>
+                        <div class="flex items-center space-x-3 text-sm">
+                            {% for r in range(1, 6) %}
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="rating" value="{{ r }}" {% if r == 5 %}checked{% endif %} class="accent-black">
+                                    <span>{{ r }}★</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Your Testimonial</label>
+                    <textarea name="testimonial_text" rows="4" required placeholder="Write your honest review here..." class="w-full p-3 bg-white border border-zinc-300 rounded-none text-sm focus:outline-none focus:border-black"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Your Name</label>
+                        <input type="text" name="customer_name" required placeholder="Jane Doe" class="w-full p-2.5 bg-white border border-zinc-300 rounded-none text-sm focus:outline-none focus:border-black">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Your Email</label>
+                        <input type="email" name="customer_email" required placeholder="jane@example.com" class="w-full p-2.5 bg-white border border-zinc-300 rounded-none text-sm focus:outline-none focus:border-black">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-zinc-500 mb-1">Company / Role (Optional)</label>
+                    <input type="text" name="company_name" placeholder="Founder at Acme Inc." class="w-full p-2.5 bg-white border border-zinc-300 rounded-none text-sm focus:outline-none focus:border-black">
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="checkbox" id="consent_min" name="sharing_consent" value="true" checked class="rounded-none border-zinc-400 text-black focus:ring-0">
+                    <label for="consent_min" class="text-xs text-zinc-500">I give permission to share this testimonial publicly.</label>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-black text-white text-xs uppercase tracking-widest font-semibold hover:bg-zinc-800 transition">
+                    Send Testimonial
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+{% elif space.theme == 'classic' %}
+<!-- Classic Theme: Warm amber/stone palette, serif fonts, formal styling -->
+<body class="min-h-full bg-stone-100 text-stone-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6">
+    <div class="max-w-xl w-full mx-auto space-y-8">
+        <div class="text-center space-y-3 pb-4">
+            <span class="inline-block px-3 py-1 bg-amber-100 text-amber-900 text-xs font-semibold rounded tracking-wider uppercase border border-amber-200">
+                Client Testimonials
+            </span>
+            <h1 class="text-3xl font-bold tracking-normal text-stone-900">{{ space.title or space.name }}</h1>
+            {% if space.subtitle %}
+                <p class="text-base text-stone-600 italic">{{ space.subtitle }}</p>
+            {% endif %}
+        </div>
+
+        {% if error %}
+            <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="bg-white border-2 border-amber-800/20 shadow-lg p-8 rounded-lg">
+            {% if space.ask %}
+                <div class="mb-6 p-4 bg-amber-50/70 border-l-4 border-amber-600 text-sm text-stone-800">
+                    <p class="font-bold text-xs uppercase tracking-wider text-amber-800 mb-1">Guiding Question</p>
+                    <p class="italic text-base">"{{ space.ask }}"</p>
+                </div>
+            {% endif %}
+
+            <form action="/s/{{ space.public_slug }}/submit-form" method="post" class="space-y-5">
+                {% if space.enable_rating %}
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-800 mb-1">Your Rating</label>
+                        <div class="flex items-center space-x-3 text-sm text-amber-600">
+                            {% for r in range(1, 6) %}
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="rating" value="{{ r }}" {% if r == 5 %}checked{% endif %} class="accent-amber-600">
+                                    <span>{{ r }}★</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <label class="block text-sm font-semibold text-stone-800 mb-1">Your Testimonial</label>
+                    <textarea name="testimonial_text" rows="4" required placeholder="Share your experience with us..." class="w-full p-3 bg-stone-50 border border-stone-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-amber-700"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-800 mb-1">Full Name</label>
+                        <input type="text" name="customer_name" required placeholder="Johnathan Smith" class="w-full p-2.5 bg-stone-50 border border-stone-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-amber-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-stone-800 mb-1">Email Address</label>
+                        <input type="email" name="customer_email" required placeholder="johnathan@example.com" class="w-full p-2.5 bg-stone-50 border border-stone-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-amber-700">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-stone-800 mb-1">Company &amp; Title</label>
+                    <input type="text" name="company_name" placeholder="Managing Director, Heritage Group" class="w-full p-2.5 bg-stone-50 border border-stone-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-amber-700">
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="checkbox" id="consent_classic" name="sharing_consent" value="true" checked class="rounded border-stone-300 text-amber-800 focus:ring-amber-700">
+                    <label for="consent_classic" class="text-xs text-stone-600">I agree that this review may be published on the website.</label>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-amber-800 text-amber-50 text-sm font-semibold rounded hover:bg-amber-900 shadow transition">
+                    Submit Recommendation
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+{% else %}
+<!-- Modern Theme (Default): Vibrant gradients, rounded-2xl cards, indigo accents -->
+<body class="min-h-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 flex flex-col justify-center items-center py-12 px-4 sm:px-6">
+    <div class="max-w-xl w-full mx-auto space-y-8">
+        <div class="text-center space-y-3">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 backdrop-blur-sm">
+                ★ Share Your Story
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-indigo-300">
+                {{ space.title or space.name }}
+            </h1>
+            {% if space.subtitle %}
+                <p class="text-base text-indigo-200/80">{{ space.subtitle }}</p>
+            {% endif %}
+        </div>
+
+        {% if error %}
+            <div class="p-4 bg-rose-500/20 border border-rose-500/40 text-rose-200 text-xs rounded-xl">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="bg-white/10 backdrop-blur-md border border-white/10 shadow-2xl p-8 rounded-2xl text-slate-100">
+            {% if space.ask %}
+                <div class="mb-6 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-sm text-indigo-200">
+                    <div class="font-semibold text-xs text-indigo-400 uppercase tracking-wider mb-1">Prompt</div>
+                    <p>{{ space.ask }}</p>
+                </div>
+            {% endif %}
+
+            <form action="/s/{{ space.public_slug }}/submit-form" method="post" class="space-y-5">
+                {% if space.enable_rating %}
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-300 mb-2">Rating</label>
+                        <div class="flex items-center space-x-3 text-sm text-amber-400">
+                            {% for r in range(1, 6) %}
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="rating" value="{{ r }}" {% if r == 5 %}checked{% endif %} class="accent-indigo-500">
+                                    <span>{{ r }}★</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-300 mb-1">Your Testimonial</label>
+                    <textarea name="testimonial_text" rows="4" required placeholder="What do you think about our product?" class="w-full p-3.5 bg-slate-800/80 border border-white/10 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-300 mb-1">Your Name</label>
+                        <input type="text" name="customer_name" required placeholder="Alex Rivera" class="w-full p-3 bg-slate-800/80 border border-white/10 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-300 mb-1">Your Email</label>
+                        <input type="email" name="customer_email" required placeholder="alex@company.com" class="w-full p-3 bg-slate-800/80 border border-white/10 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-300 mb-1">Company / Role (Optional)</label>
+                    <input type="text" name="company_name" placeholder="Product Lead at Orbit" class="w-full p-3 bg-slate-800/80 border border-white/10 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="checkbox" id="consent_mod" name="sharing_consent" value="true" checked class="rounded border-white/20 text-indigo-600 focus:ring-indigo-500 bg-slate-800">
+                    <label for="consent_mod" class="text-xs text-indigo-200/80">I give permission to use this review on marketing channels.</label>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-500 to-violet-600 text-white text-sm font-bold rounded-xl shadow-lg hover:from-indigo-600 hover:to-violet-700 transition">
+                    Send Testimonial 🚀
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+{% endif %}
+</html>

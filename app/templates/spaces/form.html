@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Edit Space" if is_edit else "Create New Space" }} - KudoSpace{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ "Edit Space" if is_edit else "Create New Space" }}</h1>
+            <p class="text-sm text-slate-500 mt-1">Configure your collection space, customize themes, and define what questions you ask your customers.</p>
+        </div>
+        <a href="/spaces" class="text-sm font-medium text-slate-600 hover:text-slate-900">
+            &larr; Back to spaces
+        </a>
+    </div>
+
+    {% if error %}
+        <div class="mb-6 p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-sm">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if limit_reached and not is_edit %}
+        <div class="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-start gap-3">
+            <span class="text-amber-500 font-bold text-lg leading-none">⚠</span>
+            <div>
+                <p class="font-semibold">Space Limit Reached</p>
+                <p class="mt-0.5">You have reached the maximum allowed spaces ({{ limits.max_spaces }}) for your {{ plan.capitalize() }} plan. Please upgrade to Pro or delete an existing space to create a new one.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <form action="{{ '/spaces/' ~ space.id ~ '/edit-form' if is_edit else '/spaces/form' }}" method="post" class="space-y-6">
+            <!-- Space Name -->
+            <div>
+                <label for="name" class="block text-sm font-semibold text-slate-700 mb-1">
+                    Space Name <span class="text-rose-500">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    value="{{ space.name if space else '' }}" 
+                    required 
+                    placeholder="e.g. Acme SaaS Customer Feedback"
+                    class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    {% if limit_reached and not is_edit %}disabled{% endif %}
+                >
+                <p class="text-xs text-slate-400 mt-1">Used internally to identify your space in your dashboard.</p>
+            </div>
+
+            <!-- Page Title -->
+            <div>
+                <label for="title" class="block text-sm font-semibold text-slate-700 mb-1">
+                    Public Page Title
+                </label>
+                <input 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    value="{{ space.title if space else '' }}" 
+                    placeholder="e.g. Help us improve with your honest review!"
+                    class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    {% if limit_reached and not is_edit %}disabled{% endif %}
+                >
+            </div>
+
+            <!-- Subtitle -->
+            <div>
+                <label for="subtitle" class="block text-sm font-semibold text-slate-700 mb-1">
+                    Public Subtitle
+                </label>
+                <input 
+                    type="text" 
+                    id="subtitle" 
+                    name="subtitle" 
+                    value="{{ space.subtitle if space else '' }}" 
+                    placeholder="e.g. It only takes 60 seconds to share your thoughts."
+                    class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    {% if limit_reached and not is_edit %}disabled{% endif %}
+                >
+            </div>
+
+            <!-- Prompt / Ask -->
+            <div>
+                <label for="ask" class="block text-sm font-semibold text-slate-700 mb-1">
+                    Question / Prompt (Ask)
+                </label>
+                <textarea 
+                    id="ask" 
+                    name="ask" 
+                    rows="3" 
+                    placeholder="e.g. What specific feature has made the biggest difference in your daily workflow?"
+                    class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    {% if limit_reached and not is_edit %}disabled{% endif %}
+                >{{ space.ask if space else '' }}</textarea>
+            </div>
+
+            <!-- Public Slug -->
+            <div>
+                <label for="public_slug" class="block text-sm font-semibold text-slate-700 mb-1">
+                    Custom Public Slug (optional)
+                </label>
+                <div class="flex rounded-lg shadow-sm">
+                    <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm">
+                        /s/
+                    </span>
+                    <input 
+                        type="text" 
+                        id="public_slug" 
+                        name="public_slug" 
+                        value="{{ space.public_slug if space else '' }}" 
+                        placeholder="my-product-reviews"
+                        class="flex-1 min-w-0 block w-full px-3.5 py-2 rounded-none rounded-r-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        {% if limit_reached and not is_edit %}disabled{% endif %}
+                    >
+                </div>
+                <p class="text-xs text-slate-400 mt-1">If left blank, a unique slug will be automatically generated from the space name.</p>
+            </div>
+
+            <!-- Theme Selection -->
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    Collection Page Theme <span class="text-rose-500">*</span>
+                </label>
+                {% set current_theme = space.theme if space else 'minimal' %}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- Minimal -->
+                    <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:border-indigo-500 transition has-[:checked]:border-indigo-600 has-[:checked]:ring-2 has-[:checked]:ring-indigo-500 has-[:checked]:bg-indigo-50/30">
+                        <input type="radio" name="theme" value="minimal" class="sr-only" {% if current_theme == 'minimal' %}checked{% endif %} {% if limit_reached and not is_edit %}disabled{% endif %}>
+                        <div class="font-bold text-sm text-slate-900 mb-1">Minimal</div>
+                        <p class="text-xs text-slate-500 mb-3">Clean monochrome aesthetic with high whitespace and subtle lines.</p>
+                        <div class="mt-auto h-8 bg-slate-100 rounded border border-slate-200 flex items-center px-2">
+                            <div class="w-2 h-2 bg-slate-400 rounded-full mr-1.5"></div>
+                            <div class="h-2 w-12 bg-slate-300 rounded"></div>
+                        </div>
+                    </label>
+
+                    <!-- Modern -->
+                    <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:border-indigo-500 transition has-[:checked]:border-indigo-600 has-[:checked]:ring-2 has-[:checked]:ring-indigo-500 has-[:checked]:bg-indigo-50/30">
+                        <input type="radio" name="theme" value="modern" class="sr-only" {% if current_theme == 'modern' %}checked{% endif %} {% if limit_reached and not is_edit %}disabled{% endif %}>
+                        <div class="font-bold text-sm text-slate-900 mb-1">Modern</div>
+                        <p class="text-xs text-slate-500 mb-3">Vibrant gradient accents, rounded cards, and bold indigo typography.</p>
+                        <div class="mt-auto h-8 bg-gradient-to-r from-indigo-500 to-violet-500 rounded flex items-center px-2">
+                            <div class="w-2 h-2 bg-white rounded-full mr-1.5"></div>
+                            <div class="h-2 w-12 bg-white/70 rounded"></div>
+                        </div>
+                    </label>
+
+                    <!-- Classic -->
+                    <label class="relative flex flex-col p-4 border rounded-xl cursor-pointer hover:border-indigo-500 transition has-[:checked]:border-indigo-600 has-[:checked]:ring-2 has-[:checked]:ring-indigo-500 has-[:checked]:bg-indigo-50/30">
+                        <input type="radio" name="theme" value="classic" class="sr-only" {% if current_theme == 'classic' %}checked{% endif %} {% if limit_reached and not is_edit %}disabled{% endif %}>
+                        <div class="font-bold text-sm text-slate-900 mb-1">Classic</div>
+                        <p class="text-xs text-slate-500 mb-3">Serif typography with warm golden accents and timeless layout.</p>
+                        <div class="mt-auto h-8 bg-amber-50 rounded border border-amber-300 flex items-center px-2">
+                            <div class="w-2 h-2 bg-amber-500 rounded-full mr-1.5"></div>
+                            <div class="h-2 w-12 bg-amber-400 rounded"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Enable Rating Toggle -->
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                    <label for="enable_rating" class="text-sm font-semibold text-slate-700 cursor-pointer">
+                        Enable Star Rating (1 to 5 Stars)
+                    </label>
+                    <p class="text-xs text-slate-400">Allows reviewers to give a 1-5 star rating alongside their review.</p>
+                </div>
+                <input 
+                    type="checkbox" 
+                    id="enable_rating" 
+                    name="enable_rating" 
+                    value="true" 
+                    {% if (space and space.enable_rating) or not space %}checked{% endif %}
+                    class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded"
+                    {% if limit_reached and not is_edit %}disabled{% endif %}
+                >
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
+                <a href="/spaces" class="px-4 py-2 border border-slate-300 text-sm font-medium rounded-lg text-slate-700 hover:bg-slate-50 transition">
+                    Cancel
+                </a>
+                <button 
+                    type="submit" 
+                    class="px-5 py-2 bg-indigo-600 text-sm font-semibold rounded-lg text-white hover:bg-indigo-700 shadow-sm transition disabled:opacity-50"
+                    {% if limit_reached and not is_edit %}disabled{% endif %}
+                >
+                    {{ "Save Changes" if is_edit else "Create Space" }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
