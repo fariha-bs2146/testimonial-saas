@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Billing &amp; Plans - KudoSpace{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="pb-4 border-b border-slate-200">
+        <div class="flex items-center gap-2 mb-1">
+            <a href="/spaces" class="text-xs font-medium text-slate-500 hover:text-slate-800">&larr; Dashboard</a>
+            <span class="text-xs text-slate-300">/</span>
+            <span class="text-xs font-semibold text-slate-700">Billing &amp; Subscription</span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Billing &amp; Plans</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Manage your KudoSpace plan, monitor space usage, and upgrade to unlock higher quotas.</p>
+    </div>
+
+    <!-- Current Plan Status Overview -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Current Subscription</span>
+                    {% if plan == 'pro' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> Active Pro
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800">
+                            Free Tier
+                        </span>
+                    {% endif %}
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900">{{ "Pro Plan" if plan == 'pro' else "Free Starter Plan" }}</h2>
+                <p class="text-xs text-slate-500 mt-1">
+                    Logged in as <span class="font-medium text-slate-700">{{ user.email }}</span>
+                    {% if user.stripe_customer_id %}
+                        &bull; Customer ID: <code class="font-mono text-slate-600">{{ user.stripe_customer_id }}</code>
+                    {% endif %}
+                </p>
+            </div>
+
+            <div>
+                {% if plan == 'pro' %}
+                    <form action="/billing/create-portal-session" method="post">
+                        <button type="submit" class="px-4 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition">
+                            Manage via Stripe Portal &rarr;
+                        </button>
+                    </form>
+                {% else %}
+                    <form action="/billing/create-checkout-session" method="post">
+                        <button type="submit" class="px-5 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition flex items-center gap-1.5">
+                            Upgrade to Pro &rarr;
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quotas & Limits Progress -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6">
+            <!-- Spaces Limit -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="font-bold text-slate-600">Spaces Limit</span>
+                    <span class="font-semibold text-slate-900">{{ used_spaces }} / {{ limits.max_spaces }} used</span>
+                </div>
+                {% set space_percent = (used_spaces / limits.max_spaces * 100) if limits.max_spaces > 0 else 0 %}
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ space_percent if space_percent <= 100 else 100 }}%"></div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2">
+                    {{ "You can create up to 25 separate spaces on the Pro plan." if plan == 'pro' else "Upgrade to Pro to expand your space quota from 3 to 25." }}
+                </p>
+            </div>
+
+            <!-- Testimonials per Space -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="font-bold text-slate-600">Testimonials Limit</span>
+                    <span class="font-semibold text-slate-900">{{ limits.max_testimonials_per_space }} / space</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2">
+                    {{ "Generous quota of 1,000 testimonials for each space." if plan == 'pro' else "Free plan allows collecting up to 100 testimonials per space." }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Comparison Grid -->
+    <div class="space-y-4">
+        <div class="text-center">
+            <h2 class="text-xl font-bold text-slate-900">Choose the Plan That Fits Your Growth</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Simple, transparent pricing with no hidden charges.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <!-- Free Plan -->
+            <div class="rounded-2xl border p-6 flex flex-col justify-between transition {% if plan == 'free' %}border-indigo-500 ring-2 ring-indigo-500 bg-white shadow-md{% else %}border-slate-200 bg-white shadow-sm{% endif %}">
+                <div>
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Free Tier</h3>
+                            <p class="text-xs text-slate-500">Perfect for indie hackers and getting started.</p>
+                        </div>
+                        {% if plan == 'free' %}
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700">Current</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="my-4">
+                        <span class="text-3xl font-extrabold text-slate-900">$0</span>
+                        <span class="text-xs text-slate-400">/ forever</span>
+                    </div>
+
+                    <ul class="text-xs text-slate-600 space-y-2.5 pt-2 border-t border-slate-100">
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Up to 3 Spaces
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Up to 100 Testimonials per Space
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Public Collection Slugs
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Masonry &amp; Carousel Embed Widgets
+                        </li>
+                        <li class="flex items-center gap-2 text-slate-400">
+                            <span>✕</span> Priority Stripe Billing Support
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-slate-100">
+                    <button type="button" disabled class="w-full py-2.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-500 cursor-default">
+                        {{ "Active Plan" if plan == 'free' else "Included with Account" }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="rounded-2xl border p-6 flex flex-col justify-between transition {% if plan == 'pro' %}border-emerald-500 ring-2 ring-emerald-500 bg-white shadow-md{% else %}border-indigo-600 ring-1 ring-indigo-500 bg-white shadow-md{% endif %} relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-gradient-to-l from-indigo-600 to-violet-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider">
+                    Most Popular
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Pro Plan</h3>
+                            <p class="text-xs text-slate-500">For scaling startups and product teams.</p>
+                        </div>
+                        {% if plan == 'pro' %}
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">Current</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="my-4">
+                        <span class="text-3xl font-extrabold text-slate-900">$29</span>
+                        <span class="text-xs text-slate-400">/ month</span>
+                    </div>
+
+                    <ul class="text-xs text-slate-600 space-y-2.5 pt-2 border-t border-slate-100">
+                        <li class="flex items-center gap-2 font-semibold text-slate-800">
+                            <span class="text-emerald-500 font-bold">✓</span> Up to 25 Spaces (8x more)
+                        </li>
+                        <li class="flex items-center gap-2 font-semibold text-slate-800">
+                            <span class="text-emerald-500 font-bold">✓</span> 1,000 Testimonials per Space (10x more)
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> All Themes (Minimal, Modern, Classic)
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Masonry &amp; Carousel Embed Widgets
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Wall of Love Curation &amp; Filtering
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-emerald-500 font-bold">✓</span> Stripe Customer Portal Access
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-slate-100">
+                    {% if plan == 'pro' %}
+                        <form action="/billing/create-portal-session" method="post">
+                            <button type="submit" class="w-full py-2.5 text-xs font-bold rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition">
+                                Manage Subscription &rarr;
+                            </button>
+                        </form>
+                    {% else %}
+                        <form action="/billing/create-checkout-session" method="post">
+                            <button type="submit" class="w-full py-2.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow transition">
+                                Upgrade to Pro Now &rarr;
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

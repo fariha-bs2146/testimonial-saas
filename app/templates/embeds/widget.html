@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ space.name }} - Testimonials Widget</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Masonry layout column styling */
+      .masonry-columns {
+        column-count: 1;
+        column-gap: 1rem;
+      }
+      @media (min-width: 640px) {
+        .masonry-columns {
+          column-count: 2;
+        }
+      }
+      @media (min-width: 1024px) {
+        .masonry-columns {
+          column-count: 3;
+        }
+      }
+      .masonry-item {
+        break-inside: avoid;
+        margin-bottom: 1rem;
+      }
+    </style>
+</head>
+<body class="min-h-full p-4 {% if embed.theme_mode == 'dark' %}text-slate-100{% else %}text-slate-800{% endif %}" style="background-color: {{ embed.background_color or '#ffffff' }};">
+
+    {% if testimonials %}
+        {% if embed.display_style == 'masonry' %}
+            <!-- ========================================== -->
+            <!-- 1. Masonry Grid Style                      -->
+            <!-- ========================================== -->
+            <div class="masonry-columns max-w-7xl mx-auto">
+                {% for t in testimonials %}
+                    <div class="masonry-item rounded-xl p-5 border transition shadow-sm hover:shadow-md
+                        {% if embed.theme_mode == 'dark' %}bg-slate-800/90 border-slate-700{% else %}bg-white border-slate-200{% endif %}">
+                        
+                        <!-- Stars -->
+                        {% if t.rating %}
+                            <div class="flex items-center space-x-1 text-amber-400 text-sm mb-2.5">
+                                {% for r in range(t.rating) %}★{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Text -->
+                        <p class="text-sm leading-relaxed mb-4 {% if embed.theme_mode == 'dark' %}text-slate-200{% else %}text-slate-700{% endif %}">
+                            "{{ t.testimonial_text }}"
+                        </p>
+
+                        <!-- Author -->
+                        <div class="flex items-center space-x-3 pt-3 border-t {% if embed.theme_mode == 'dark' %}border-slate-700{% else %}border-slate-100{% endif %}">
+                            {% if t.profile_photo_url %}
+                                <img src="{{ t.profile_photo_url }}" alt="{{ t.customer_name }}" class="w-8 h-8 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs
+                                    {% if embed.theme_mode == 'dark' %}bg-indigo-900 text-indigo-300{% else %}bg-indigo-100 text-indigo-700{% endif %}">
+                                    {{ t.customer_name[:2].upper() }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div class="text-xs font-bold {% if embed.theme_mode == 'dark' %}text-white{% else %}text-slate-900{% endif %}">{{ t.customer_name }}</div>
+                                {% if t.company_name %}
+                                    <div class="text-[11px] {% if embed.theme_mode == 'dark' %}text-slate-400{% else %}text-slate-500{% endif %}">{{ t.company_name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            <!-- ========================================== -->
+            <!-- 2. Carousel Slider Style                   -->
+            <!-- ========================================== -->
+            <div class="max-w-3xl mx-auto py-6">
+                <div class="relative overflow-hidden rounded-2xl p-6 sm:p-8 border shadow-sm
+                    {% if embed.theme_mode == 'dark' %}bg-slate-800/90 border-slate-700{% else %}bg-white border-slate-200{% endif %}" id="carousel-box">
+                    
+                    <div id="carousel-slides" class="relative min-h-[160px] flex items-center justify-center">
+                        {% for t in testimonials %}
+                            <div class="carousel-slide {% if loop.first %}block{% else %}hidden{% endif %} text-center space-y-4 w-full transition-opacity duration-300" data-index="{{ loop.index0 }}">
+                                {% if t.rating %}
+                                    <div class="flex items-center justify-center space-x-1 text-amber-400 text-lg">
+                                        {% for r in range(t.rating) %}★{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <p class="text-base sm:text-lg italic leading-relaxed px-6 sm:px-12 {% if embed.theme_mode == 'dark' %}text-slate-200{% else %}text-slate-700{% endif %}">
+                                    "{{ t.testimonial_text }}"
+                                </p>
+                                <div class="pt-2">
+                                    <div class="text-sm font-bold {% if embed.theme_mode == 'dark' %}text-white{% else %}text-slate-900{% endif %}">{{ t.customer_name }}</div>
+                                    {% if t.company_name %}
+                                        <div class="text-xs {% if embed.theme_mode == 'dark' %}text-slate-400{% else %}text-slate-500{% endif %}">{{ t.company_name }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Navigation arrows -->
+                    {% if testimonials|length > 1 %}
+                        <button type="button" onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full border transition
+                            {% if embed.theme_mode == 'dark' %}bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600{% else %}bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200{% endif %}">
+                            &#10094;
+                        </button>
+                        <button type="button" onclick="nextSlide()" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full border transition
+                            {% if embed.theme_mode == 'dark' %}bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600{% else %}bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200{% endif %}">
+                            &#10095;
+                        </button>
+
+                        <!-- Indicator Dots -->
+                        <div class="flex justify-center space-x-2 mt-4 pt-2">
+                            {% for t in testimonials %}
+                                <button type="button" onclick="goToSlide({{ loop.index0 }})" class="dot-indicator w-2 h-2 rounded-full transition {% if loop.first %}bg-indigo-600 w-4{% else %}bg-slate-300{% endif %}" data-index="{{ loop.index0 }}"></button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Carousel JavaScript -->
+            <script>
+                let currentIndex = 0;
+                const slides = document.querySelectorAll('.carousel-slide');
+                const dots = document.querySelectorAll('.dot-indicator');
+                const totalSlides = slides.length;
+
+                function showSlide(index) {
+                    if (totalSlides === 0) return;
+                    currentIndex = (index + totalSlides) % totalSlides;
+                    slides.forEach((slide, idx) => {
+                        slide.classList.toggle('hidden', idx !== currentIndex);
+                        slide.classList.toggle('block', idx === currentIndex);
+                    });
+                    dots.forEach((dot, idx) => {
+                        if (idx === currentIndex) {
+                            dot.className = "dot-indicator w-4 h-2 rounded-full bg-indigo-600 transition";
+                        } else {
+                            dot.className = "dot-indicator w-2 h-2 rounded-full bg-slate-300 transition";
+                        }
+                    });
+                }
+
+                function nextSlide() { showSlide(currentIndex + 1); }
+                function prevSlide() { showSlide(currentIndex - 1); }
+                function goToSlide(idx) { showSlide(idx); }
+
+                {% if embed.animation_enabled and testimonials|length > 1 %}
+                    setInterval(nextSlide, 4000);
+                {% endif %}
+            </script>
+        {% endif %}
+    {% else %}
+        <!-- Empty State in Widget -->
+        <div class="text-center py-12">
+            <p class="text-xs {% if embed.theme_mode == 'dark' %}text-slate-400{% else %}text-slate-500{% endif %}">
+                No testimonials to display yet.
+            </p>
+        </div>
+    {% endif %}
+
+</body>
+</html>
